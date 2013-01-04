@@ -133,6 +133,14 @@ Options:
 	By default the most recent version is generated.
 	Relevant for dtb and asm output only.
 
+    -@
+        Dynamic resolution mode. For non /plugin/ compilations generate
+	a __symbols__ node containing a list of all nodes with a label.
+	When /plugin/ is used, unresolved references are recorded in
+	a __fixups__ node, while local phandle references are recorded
+	in a __local_fixups__ node.
+	See Documentation/dt-object-internal.txt
+
 
 The <output_version> defines what version of the "blob" format will be
 generated.  Supported versions are 1, 2, 3, 16 and 17.  The default is

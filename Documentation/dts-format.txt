@@ -115,7 +115,14 @@ Version 1 DTS files have the overall layout:
 
 * C style (/* ... */) and C++ style (// ...) comments are supported.
 
+Device Tree Objects
+-------------------
 
+Using the plugin tag enables dynamic tree objects.
+
+	/plugin/;
+
+For the full details please see Documentation/dt-object-internal.txt
 
 	-- David Gibson <david@gibson.dropbear.id.au>
 	-- Yoder Stuart <stuart.yoder@freescale.com>
