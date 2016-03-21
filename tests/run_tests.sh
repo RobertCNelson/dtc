@@ -198,6 +198,9 @@ libfdt_tests () {
     run_dtc_test -I dts -O dtb -o addresses.test.dtb addresses.dts
     run_test addr_size_cells addresses.test.dtb
 
+    run_dtc_test -I dts -O dtb -o stringlist.test.dtb stringlist.dts
+    run_test stringlist stringlist.test.dtb
+
     # Sequential write tests
     run_test sw_tree1
     tree1_tests sw_tree1.test.dtb
@@ -269,6 +272,11 @@ libfdt_tests () {
     # Tests for behaviour on various sorts of corrupted trees
     run_test truncated_property
 
+    # Check aliases support in fdt_path_offset
+    run_dtc_test -I dts -O dtb -o aliases.dtb aliases.dts
+    run_test get_alias aliases.dtb
+    run_test path_offset_aliases aliases.dtb
+
     # Specific bug tests
     run_test add_subnode_with_nops
     run_dtc_test -I dts -O dts -o sourceoutput.test.dts sourceoutput.dts
@@ -281,6 +289,14 @@ libfdt_tests () {
     run_test dtbs_equal_ordered embedded_nul.test.dtb embedded_nul_equiv.test.dtb
 
     run_dtc_test -I dts -O dtb bad-size-cells.dts
+
+    run_wrap_error_test $DTC division-by-zero.dts
+    run_wrap_error_test $DTC bad-octal-literal.dts
+    run_dtc_test -I dts -O dtb nul-in-escape.dts
+    run_wrap_error_test $DTC nul-in-line-info1.dts
+    run_wrap_error_test $DTC nul-in-line-info2.dts
+
+    run_wrap_error_test $DTC -I dtb -O dts -o /dev/null ovf_size_strings.dtb
 }
 
 dtc_tests () {
@@ -326,11 +342,6 @@ dtc_tests () {
     run_dtc_test -I dts -O dtb -o dtc_comments.test.dtb comments.dts
     run_dtc_test -I dts -O dtb -o dtc_comments-cmp.test.dtb comments-cmp.dts
     run_test dtbs_equal_ordered dtc_comments.test.dtb dtc_comments-cmp.test.dtb
-
-    # Check aliases support in fdt_path_offset
-    run_dtc_test -I dts -O dtb -o aliases.dtb aliases.dts
-    run_test get_alias aliases.dtb
-    run_test path_offset_aliases aliases.dtb
 
     # Check /include/ directive
     run_dtc_test -I dts -O dtb -o includes.test.dtb include0.dts
@@ -434,6 +445,8 @@ dtc_tests () {
     check_tests reg-ranges-root.dts reg_format ranges_format
     check_tests default-addr-size.dts avoid_default_addr_size
     check_tests obsolete-chosen-interrupt-controller.dts obsolete_chosen_interrupt_controller
+    check_tests reg-without-unit-addr.dts unit_address_vs_reg
+    check_tests unit-addr-without-reg.dts unit_address_vs_reg
     run_sh_test dtc-checkfails.sh node_name_chars -- -I dtb -O dtb bad_node_char.dtb
     run_sh_test dtc-checkfails.sh node_name_format -- -I dtb -O dtb bad_node_format.dtb
     run_sh_test dtc-checkfails.sh prop_name_chars -- -I dtb -O dtb bad_prop_char.dtb
@@ -645,21 +658,6 @@ utilfdt_tests () {
 
 fdtdump_tests () {
     run_fdtdump_test fdtdump.dts
-    return
-
-    local dts=fdtdump.dts
-    local dtb=fdtdump.dts.dtb
-    local out=fdtdump.dts.out
-    run_dtc_test -O dtb $dts -o ${dtb}
-    $FDTDUMP ${dtb} | grep -v "//" >${out}
-    if cmp $dts $out >/dev/null; then
-	PASS
-    else
-	if [ -z "$QUIET_TEST" ]; then
-	    diff -w fdtdump.dts $out
-	fi
-	FAIL "Results differ from expected"
-    fi
 }
 
 while getopts "vt:me" ARG ; do
